@@ -6,7 +6,7 @@ Helper function for simple image manipulation using GD functions.
 ###Samples
 Open an image, remove any boarder, resize to 64x64 and save it.
 
-`
+<pre><code>
 $path = 'test.png';
 $image = new Image($path);
 $imageContent = $image->findContent();
@@ -18,5 +18,5 @@ $image->crop(
 );
 $image->resize(64, 64);
 $image->save($path, 'png');
-`
+</code></pre>
 

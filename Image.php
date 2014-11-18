@@ -75,7 +75,7 @@ class Image
     }
 
     /**
-     * Destroy image
+     * Clear image from memory
      */
     function __destruct()
     {
@@ -87,7 +87,7 @@ class Image
     /**
      * Flip the image
      *
-     * @param string $axis What axis to flip the image on
+     * @param string $axis Whether to flip along the 'x' or 'y' axis
      *
      * @return null
      */
@@ -137,7 +137,7 @@ class Image
      *
      * @param int  $width        The desired width
      * @param int  $height       The desired height
-     * @param bool $retainAspect Add a border if aspects doesn't match
+     * @param bool $retainAspect Add a border if aspects don't match
      *
      * @return null
      */
@@ -153,7 +153,7 @@ class Image
         if ($retainAspect) {
             $ratio = $this->width / $this->height;
 
-            //which side exceeds the bounds the most
+            // Which side most exceeds the bounds
             if ($this->width / $width > $this->height / $height) {
                 $height = round($width / $ratio);
             } else {
@@ -222,9 +222,9 @@ class Image
     }
 
     /**
-     * Crop or enlarge image, centering the original image
+     * Resize image canvace, centering the original image
      *
-     * Fills background color with white if transparent = false
+     * Fills background color with white if image isn't transparent
      *
      * @param int $width  The desired width
      * @param int $height The desired height
@@ -237,7 +237,7 @@ class Image
             return;
         }
 
-        //FIXME image is not centered if size is smaller then current
+        //FIXME When cropping, the image is not centered
 
         $temp = imagecreatetruecolor($width, $height); // Create a blank image
         if ($this->transparent) {
@@ -284,7 +284,7 @@ class Image
     /**
      * Scan image for a single colored border
      *
-     * @param int $tolerance Tolerance of color change
+     * @param int $tolerance Tolerance of color variation
      *
      * @return array
      */
@@ -295,7 +295,7 @@ class Image
         $cg = ($rgb >> 8) & 0xFF;
         $cb = $rgb & 0xFF;
 
-        //Scan for left
+        // Scan for left edge
         $x = 0;
         for ($ix = 0; $ix < $this->width; $ix++) {
             for ($iy = 0; $iy < $this->height; $iy++) {
@@ -313,7 +313,7 @@ class Image
             }
         }
 
-        //Scan for top
+        // Scan for top edge
         $y = 0;
         for ($iy = 0; $iy < $this->height; $iy++) {
             for ($ix = 0; $ix < $this->width; $ix++) {
@@ -331,7 +331,7 @@ class Image
             }
         }
 
-        //Scan for right
+        // Scan for right edge
         $width = 0;
         for ($ix = $this->width - 1; $ix >= 0; $ix--) {
             for ($iy = $this->height-1; $iy >= 0; $iy--) {
@@ -349,7 +349,7 @@ class Image
             }
         }
 
-        //Scan for bottom
+        // Scan for bottom edge
         $height = 0;
         for ($iy = $this->height - 1; $iy >= 0; $iy--) {
             for ($ix = $this->width - 1; $ix >= 0; $ix--) {
@@ -373,7 +373,7 @@ class Image
     /**
      * Save image
      *
-     * @param string $path    Save path, if null the image will be send to the output
+     * @param string $path    Save path, if null the image will be sent to the output
      * @param string $format  webp|png|jpeg|gif|wbmp
      * @param string $quality 0-100, only for jpeg
      *
