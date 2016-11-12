@@ -1,28 +1,13 @@
-<?php
-/**
- * Implement image class
- *
- * PHP version 5.5
- *
- * @category Image
- * @package  Føniks
- * @author   Anders Jenbo <anders@jenbo.dk>
- * @license  LGPL http://www.gnu.org/licenses/lgpl.html
- * @link     http://anders.jenbo.dk/
- */
+<?php namespace AJenbo;
 
 /**
- * Helper function for simple image manipulation using GD functions
- *
- * @category Image
- * @package  Føniks
- * @author   Anders Jenbo <anders@jenbo.dk>
  * @license  LGPL http://www.gnu.org/licenses/lgpl.html
- * @link     http://anders.jenbo.dk/
+ * @link     https://github.com/AJenbo/Image.php
  */
+
 class Image
 {
-    private $_image = null;
+    private $image = null;
     public $transparent = false;
     public $width = 0;
     public $height = 0;
@@ -34,7 +19,7 @@ class Image
      *
      * @param string $path Path to input image
      */
-    function __construct($path)
+    public function __construct(string $path)
     {
         if (!$path) {
             throw new Exception(_('No path specified!'));
@@ -46,41 +31,41 @@ class Image
         $mimeType = explode(';', $mimeType);
         $mimeType = $mimeType[0];
 
-        switch($mimeType) {
-        case 'image/jpeg':
-            $this->_image = imagecreatefromjpeg($path);
-            break;
-        case 'image/png':
-            $this->transparent = true;
-            $this->_image = imagecreatefrompng($path);
-            break;
-        case 'image/gif':
-            $this->transparent = true;
-            $this->_image = imagecreatefromgif($path);
-            break;
-        case 'image/webp':
-            $this->_image = imagecreatefromwebp($path);
-            break;
-        case 'image/vnd.wap.wbmp':
-            $this->_image = imagecreatefromwbmp($path);
-            break;
+        switch ($mimeType) {
+            case 'image/jpeg':
+                $this->image = imagecreatefromjpeg($path);
+                break;
+            case 'image/png':
+                $this->transparent = true;
+                $this->image = imagecreatefrompng($path);
+                break;
+            case 'image/gif':
+                $this->transparent = true;
+                $this->image = imagecreatefromgif($path);
+                break;
+            case 'image/webp':
+                $this->image = imagecreatefromwebp($path);
+                break;
+            case 'image/vnd.wap.wbmp':
+                $this->image = imagecreatefromwbmp($path);
+                break;
         }
 
-        if (!$this->_image) {
+        if (!$this->image) {
             throw new Exception(_('Could not open image.'));
         }
 
-        $this->width = imagesx($this->_image);
-        $this->height = imagesy($this->_image);
+        $this->width = imagesx($this->image);
+        $this->height = imagesy($this->image);
     }
 
     /**
      * Clear image from memory
      */
-    function __destruct()
+    public function __destruct()
     {
-        if ($this->_image) {
-            imagedestroy($this->_image);
+        if ($this->image) {
+            imagedestroy($this->image);
         }
     }
 
@@ -91,7 +76,7 @@ class Image
      *
      * @return null
      */
-    function flip($axis = 'x')
+    public function flip(string $axis = 'x')
     {
         $temp = imagecreatetruecolor($this->width, $this->height);
         if ($this->transparent) {
@@ -101,7 +86,7 @@ class Image
             for ($x = 0; $x < $this->width; $x++) {
                 imagecopy(
                     $temp,
-                    $this->_image,
+                    $this->image,
                     $this->width - $x - 1,
                     0,
                     $x,
@@ -114,7 +99,7 @@ class Image
             for ($y=0; $y < $this->height; $y++) {
                 imagecopy(
                     $temp,
-                    $this->_image,
+                    $this->image,
                     0,
                     $this->height - $y - 1,
                     0,
@@ -125,11 +110,11 @@ class Image
             }
         }
 
-        imagedestroy($this->_image);
+        imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
         }
-        $this->_image = $temp;
+        $this->image = $temp;
     }
 
     /**
@@ -141,7 +126,7 @@ class Image
      *
      * @return null
      */
-    function resize($width, $height, $retainAspect = true)
+    public function resize(int $width, int $height, bool $retainAspect = true)
     {
         if (!$width
             || !$height
@@ -167,7 +152,7 @@ class Image
         }
         imagecopyresampled(
             $temp,
-            $this->_image,
+            $this->image,
             0,
             0,
             0,
@@ -177,14 +162,14 @@ class Image
             $this->width,
             $this->height
         );
-        imagedestroy($this->_image);
+        imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
         }
-        $this->_image = $temp;
+        $this->image = $temp;
 
-        $this->width = imagesx($this->_image);
-        $this->height = imagesy($this->_image);
+        $this->width = imagesx($this->image);
+        $this->height = imagesy($this->image);
     }
 
     /**
@@ -197,7 +182,7 @@ class Image
      *
      * @return null
      */
-    function crop($X = 0, $Y = 0, $width = 0, $height = 0)
+    public function crop(int $X = 0, int $Y = 0, int $width = 0, int $height = 0)
     {
         if (!$width
             || !$height
@@ -210,15 +195,15 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        imagecopy($temp, $this->_image, 0, 0, $X, $Y, $width, $height);
-        imagedestroy($this->_image);
+        imagecopy($temp, $this->image, 0, 0, $X, $Y, $width, $height);
+        imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
         }
-        $this->_image = $temp;
+        $this->image = $temp;
 
-        $this->width = imagesx($this->_image);
-        $this->height = imagesy($this->_image);
+        $this->width = imagesx($this->image);
+        $this->height = imagesy($this->image);
     }
 
     /**
@@ -231,7 +216,7 @@ class Image
      *
      * @return null
      */
-    function resizeCanvas($width, $height)
+    public function resizeCanvas(int $width, int $height)
     {
         if (!$width || !$height) {
             return;
@@ -263,7 +248,7 @@ class Image
 
         imagecopy(
             $temp,
-            $this->_image,
+            $this->image,
             $canvasX,
             $canvasY,
             0,
@@ -271,14 +256,14 @@ class Image
             $this->width,
             $this->height
         );
-        imagedestroy($this->_image);
+        imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
         }
-        $this->_image = $temp;
+        $this->image = $temp;
 
-        $this->width = imagesx($this->_image);
-        $this->height = imagesy($this->_image);
+        $this->width = imagesx($this->image);
+        $this->height = imagesy($this->image);
     }
 
     /**
@@ -288,9 +273,9 @@ class Image
      *
      * @return array
      */
-    function findContent($tolerance = 5)
+    public function findContent(int $tolerance = 5): array
     {
-        $rgb = imagecolorat($this->_image, 0, 0);
+        $rgb = imagecolorat($this->image, 0, 0);
         $cr = ($rgb >> 16) & 0xFF;
         $cg = ($rgb >> 8) & 0xFF;
         $cb = $rgb & 0xFF;
@@ -299,7 +284,7 @@ class Image
         $x = 0;
         for ($ix = 0; $ix < $this->width; $ix++) {
             for ($iy = 0; $iy < $this->height; $iy++) {
-                $rgb = imagecolorat($this->_image, $ix, $iy);
+                $rgb = imagecolorat($this->image, $ix, $iy);
                 $r = ($rgb >> 16) & 0xFF;
                 $g = ($rgb >> 8) & 0xFF;
                 $b = $rgb & 0xFF;
@@ -317,7 +302,7 @@ class Image
         $y = 0;
         for ($iy = 0; $iy < $this->height; $iy++) {
             for ($ix = 0; $ix < $this->width; $ix++) {
-                $rgb = imagecolorat($this->_image, $ix, $iy);
+                $rgb = imagecolorat($this->image, $ix, $iy);
                 $r = ($rgb >> 16) & 0xFF;
                 $g = ($rgb >> 8) & 0xFF;
                 $b = $rgb & 0xFF;
@@ -335,7 +320,7 @@ class Image
         $width = 0;
         for ($ix = $this->width - 1; $ix >= 0; $ix--) {
             for ($iy = $this->height-1; $iy >= 0; $iy--) {
-                $rgb = imagecolorat($this->_image, $ix, $iy);
+                $rgb = imagecolorat($this->image, $ix, $iy);
                 $r = ($rgb >> 16) & 0xFF;
                 $g = ($rgb >> 8) & 0xFF;
                 $b = $rgb & 0xFF;
@@ -353,7 +338,7 @@ class Image
         $height = 0;
         for ($iy = $this->height - 1; $iy >= 0; $iy--) {
             for ($ix = $this->width - 1; $ix >= 0; $ix--) {
-                $rgb = imagecolorat($this->_image, $ix, $iy);
+                $rgb = imagecolorat($this->image, $ix, $iy);
                 $r = ($rgb >> 16) & 0xFF;
                 $g = ($rgb >> 8) & 0xFF;
                 $b = $rgb & 0xFF;
@@ -379,23 +364,23 @@ class Image
      *
      * @return null
      */
-    function save($path = null, $format = 'jpeg', $quality = 80)
+    public function save(string $path = null, string $format = 'jpeg', int $quality = 80)
     {
         if ($format === 'png') {
             if ($this->transparent) {
-                imagesavealpha($this->_image, true);
+                imagesavealpha($this->image, true);
             }
-            imagepng($this->_image, $path, 9, PNG_ALL_FILTERS);
+            imagepng($this->image, $path, 9, PNG_ALL_FILTERS);
             return;
         }
 
         if ($format === 'gif') {
-            imagegif($this->_image, $path);
+            imagegif($this->image, $path);
             return;
         }
 
         if ($format === 'webp') {
-            imagewebp($this->_image, $path);
+            imagewebp($this->image, $path);
             return;
         }
 
@@ -405,10 +390,10 @@ class Image
         }
 
         if ($format === 'wbmp') {
-            imagewbmp($this->_image, $path);
+            imagewbmp($this->image, $path);
             return;
         }
 
-        imagejpeg($this->_image, $path, 80);
+        imagejpeg($this->image, $path, 80);
     }
 }
