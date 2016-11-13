@@ -3,7 +3,8 @@
     "description": "Helper function for simple image manipulation using GD functions.",
     "version": "0.4.0",
     "require": {
-        "php": ">=7.0.0"
+        "php": ">=7.0.0",
+        "ext-gd": "*"
     },
     "autoload": {
         "psr-4": {
