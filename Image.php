@@ -2,18 +2,19 @@
 
 /**
  * @license  LGPL http://www.gnu.org/licenses/lgpl.html
- * @link     https://github.com/AJenbo/Image.php
+ *
+ * @see     https://github.com/AJenbo/Image.php
  */
-
 class Image
 {
-    private $image = null;
     public $transparent = false;
+
+    private $image;
     private $width = 0;
     private $height = 0;
 
     /**
-     * Load image from file
+     * Load image from file.
      *
      * Requires that mime types are set up correctly
      *
@@ -62,7 +63,7 @@ class Image
     }
 
     /**
-     * Clear image from memory
+     * Clear image from memory.
      */
     public function __destruct()
     {
@@ -82,11 +83,11 @@ class Image
     }
 
     /**
-     * Rotate image by 90 or 270 degrees
+     * Rotate image by 90 or 270 degrees.
      *
      * @param int $degrees
      */
-    function rotate(int $degrees)
+    public function rotate(int $degrees): void
     {
         if (!$degrees) {
             return;
@@ -94,26 +95,25 @@ class Image
 
         $max = max($this->width, $this->height);
 
-        if ($degrees !== 180) {
+        $temp = $this->image;
+        if (180 !== $degrees) {
             $temp = imagecreatetruecolor($max, $max);
             imagecopy($temp, $this->image, 0, 0, 0, 0, $this->width, $this->height);
             imagedestroy($this->image);
-        } else {
-            $temp = $this->image;
         }
 
         $this->image = imagerotate($temp, $degrees, 0, 1);
         imagedestroy($temp);
 
-        if ($degrees !== 180) {
+        if (180 !== $degrees) {
             $temp = imagecreatetruecolor($this->height, $this->width);
 
             $x = 0;
             $y = 0;
             if ($this->height !== $this->width) {
-                if ($degrees === 90) {
+                if (90 === $degrees) {
                     $y = $max - $this->width;
-                } elseif ($degrees === 270) {
+                } elseif (270 === $degrees) {
                     $x = $max - $this->height;
                 }
             }
@@ -128,20 +128,18 @@ class Image
     }
 
     /**
-     * Flip the image
+     * Flip the image.
      *
      * @param string $axis Whether to flip along the 'x' or 'y' axis
-     *
-     * @return null
      */
-    public function flip(string $axis = 'x')
+    public function flip(string $axis = 'x'): void
     {
         $temp = imagecreatetruecolor($this->width, $this->height);
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        if ($axis !== 'y') {
-            for ($x = 0; $x < $this->width; $x++) {
+        if ('y' !== $axis) {
+            for ($x = 0; $x < $this->width; ++$x) {
                 imagecopy(
                     $temp,
                     $this->image,
@@ -154,7 +152,7 @@ class Image
                 );
             }
         } else {
-            for ($y=0; $y < $this->height; $y++) {
+            for ($y = 0; $y < $this->height; ++$y) {
                 imagecopy(
                     $temp,
                     $this->image,
@@ -176,15 +174,13 @@ class Image
     }
 
     /**
-     * Resample the image
+     * Resample the image.
      *
      * @param int  $width        The desired width
      * @param int  $height       The desired height
      * @param bool $retainAspect Add a border if aspects don't match
-     *
-     * @return null
      */
-    public function resize(int $width, int $height, bool $retainAspect = true)
+    public function resize(int $width, int $height, bool $retainAspect = true): void
     {
         if (!$width
             || !$height
@@ -197,10 +193,9 @@ class Image
             $ratio = $this->width / $this->height;
 
             // Which side most exceeds the bounds
+            $width = round($height * $ratio);
             if ($this->width / $width > $this->height / $height) {
                 $height = round($width / $ratio);
-            } else {
-                $width = round($height * $ratio);
             }
         }
 
@@ -231,16 +226,14 @@ class Image
     }
 
     /**
-     * Crop image
+     * Crop image.
      *
-     * @param int $X      Where to start on the X axis
-     * @param int $Y      Where to start on the Y axis
+     * @param int $x      Where to start on the X axis
+     * @param int $y      Where to start on the Y axis
      * @param int $width  The desired width
      * @param int $height The desired height
-     *
-     * @return null
      */
-    public function crop(int $X = 0, int $Y = 0, int $width = 0, int $height = 0)
+    public function crop(int $x = 0, int $y = 0, int $width = 0, int $height = 0): void
     {
         if (!$width
             || !$height
@@ -253,7 +246,7 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        imagecopy($temp, $this->image, 0, 0, $X, $Y, $width, $height);
+        imagecopy($temp, $this->image, 0, 0, $x, $y, $width, $height);
         imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
@@ -265,16 +258,14 @@ class Image
     }
 
     /**
-     * Resize image canvace, centering the original image
+     * Resize image canvace, centering the original image.
      *
      * Fills background color with white if image isn't transparent
      *
      * @param int $width  The desired width
      * @param int $height The desired height
-     *
-     * @return null
      */
-    public function resizeCanvas(int $width, int $height)
+    public function resizeCanvas(int $width, int $height): void
     {
         if (!$width || !$height) {
             return;
@@ -286,22 +277,19 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        if (!$this->transparent) {
-            $background = imagecolorallocate($temp, 255, 255, 255);
-        } else {
-            $background = imageColorAllocateAlpha($temp, 0, 0, 0, 127);
+        $background = imagecolorallocate($temp, 255, 255, 255);
+        if ($this->transparent) {
+            $background = imagecolorallocatealpha($temp, 0, 0, 0, 127);
         }
         imagefilledrectangle($temp, 0, 0, $width, $height, $background);
 
+        $canvasX = (int) round(($width - $this->width) / 2);
         if ($this->width > $width) {
-            $canvasX = round(($this->width - $width) / 2);
-        } else {
-            $canvasX = round(($width - $this->width) / 2);
+            $canvasX = (int) round(($this->width - $width) / 2);
         }
+        $canvasY = (int) round(($height - $this->height) / 2);
         if ($this->height > $height) {
-            $canvasY = -round(($this->height - $height) / 2);
-        } else {
-            $canvasY = round(($height - $this->height) / 2);
+            $canvasY = (int) -round(($this->height - $height) / 2);
         }
 
         imagecopy(
@@ -325,11 +313,11 @@ class Image
     }
 
     /**
-     * Scan image for a single colored border
+     * Scan image for a single colored border.
      *
      * @param int $tolerance Tolerance of color variation
      *
-     * @return array
+     * @return int[]
      */
     public function findContent(int $tolerance = 5): array
     {
@@ -344,8 +332,8 @@ class Image
 
             // Scan for left edge
             $x = 0;
-            for ($ix = 0; $ix < $this->width; $ix++) {
-                for ($iy = 0; $iy < $this->height; $iy++) {
+            for ($ix = 0; $ix < $this->width; ++$ix) {
+                for ($iy = 0; $iy < $this->height; ++$iy) {
                     $rgb = imagecolorat($this->image, $ix, $iy);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
@@ -362,8 +350,8 @@ class Image
 
             // Scan for top edge
             $y = 0;
-            for ($iy = 0; $iy < $this->height; $iy++) {
-                for ($ix = 0; $ix < $this->width; $ix++) {
+            for ($iy = 0; $iy < $this->height; ++$iy) {
+                for ($ix = 0; $ix < $this->width; ++$ix) {
                     $rgb = imagecolorat($this->image, $ix, $iy);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
@@ -380,8 +368,8 @@ class Image
 
             // Scan for right edge
             $width = 0;
-            for ($ix = $this->width - 1; $ix >= 0; $ix--) {
-                for ($iy = $this->height-1; $iy >= 0; $iy--) {
+            for ($ix = $this->width - 1; $ix >= 0; --$ix) {
+                for ($iy = $this->height - 1; $iy >= 0; --$iy) {
                     $rgb = imagecolorat($this->image, $ix, $iy);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
@@ -398,8 +386,8 @@ class Image
 
             // Scan for bottom edge
             $height = 0;
-            for ($iy = $this->height - 1; $iy >= 0; $iy--) {
-                for ($ix = $this->width - 1; $ix >= 0; $ix--) {
+            for ($iy = $this->height - 1; $iy >= 0; --$iy) {
+                for ($ix = $this->width - 1; $ix >= 0; --$ix) {
                     $rgb = imagecolorat($this->image, $ix, $iy);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
@@ -423,31 +411,32 @@ class Image
     }
 
     /**
-     * Save image
+     * Save image.
      *
-     * @param string $path    Save path, if null the image will be sent to the output
-     * @param string $format  webp|png|jpeg|gif|wbmp
-     * @param string $quality 0-100, only for jpeg
-     *
-     * @return null
+     * @param string|null $path    Save path, if null the image will be sent to the output
+     * @param string      $format  webp|png|jpeg|gif|wbmp
+     * @param string      $quality 0-100, only for jpeg
      */
-    public function save(string $path = null, string $format = 'jpeg', int $quality = 80)
+    public function save(string $path = null, string $format = 'jpeg', int $quality = 80): void
     {
-        if ($format === 'png') {
+        if ('png' === $format) {
             if ($this->transparent) {
                 imagesavealpha($this->image, true);
             }
             imagepng($this->image, $path, 9, PNG_ALL_FILTERS);
+
             return;
         }
 
-        if ($format === 'gif') {
+        if ('gif' === $format) {
             imagegif($this->image, $path);
+
             return;
         }
 
-        if ($format === 'webp') {
+        if ('webp' === $format) {
             imagewebp($this->image, $path);
+
             return;
         }
 
@@ -456,8 +445,9 @@ class Image
             $this->resizeCanvas($this->width, $this->height);
         }
 
-        if ($format === 'wbmp') {
+        if ('wbmp' === $format) {
             imagewbmp($this->image, $path);
+
             return;
         }
 
