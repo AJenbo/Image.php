@@ -1,5 +1,7 @@
 <?php namespace AJenbo;
 
+use AJenbo\ImagePhp\Exception;
+
 /**
  * @license  LGPL http://www.gnu.org/licenses/lgpl.html
  *
@@ -415,7 +417,7 @@ class Image
      *
      * @param string|null $path    Save path, if null the image will be sent to the output
      * @param string      $format  webp|png|jpeg|gif|wbmp
-     * @param string      $quality 0-100, only for jpeg
+     * @param int         $quality 0-100, only for jpeg
      */
     public function save(string $path = null, string $format = 'jpeg', int $quality = 80): void
     {
