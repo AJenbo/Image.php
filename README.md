@@ -1,6 +1,8 @@
 Image.php
 ================
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b8ab08f9d74345eca587148c0d3b365c)](https://www.codacy.com/app/AJenbo/imap.php?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AJenbo/imap.php&amp;utm_campaign=Badge_Grade)
+
 Helper function for simple image manipulation using GD functions.
 
 ###Samples
