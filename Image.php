@@ -110,17 +110,17 @@ class Image
         if (180 !== $degrees) {
             $temp = imagecreatetruecolor($this->height, $this->width);
 
-            $x = 0;
-            $y = 0;
+            $left = 0;
+            $top = 0;
             if ($this->height !== $this->width) {
                 if (90 === $degrees) {
-                    $y = $max - $this->width;
+                    $top = $max - $this->width;
                 } elseif (270 === $degrees) {
-                    $x = $max - $this->height;
+                    $left = $max - $this->height;
                 }
             }
 
-            imagecopy($temp, $this->image, 0, 0, $x, $y, $this->height, $this->width);
+            imagecopy($temp, $this->image, 0, 0, $left, $top, $this->height, $this->width);
             imagedestroy($this->image);
             $this->image = $temp;
         }
@@ -140,32 +140,29 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        if ('y' !== $axis) {
-            for ($x = 0; $x < $this->width; ++$x) {
-                imagecopy(
-                    $temp,
-                    $this->image,
-                    $this->width - $x - 1,
-                    0,
-                    $x,
-                    0,
-                    1,
-                    $this->height
-                );
+
+        $left = 0;
+        $width = $this->width;
+        $height = 1;
+        $destLeft = 0;
+        $lines = $this->height;
+        if ('x' === $axis) {
+            $width = 1;
+            $height = $this->height;
+            $lines = $this->width;
+        }
+
+        for ($line = 0; $line < $lines; ++$line) {
+            $top = $this->height - $line - 1;
+            $destTop = $line;
+            if ('x' === $axis) {
+                $left = $this->width - $line - 1;
+                $top = 0;
+                $destLeft = $line;
+                $destTop = 0;
             }
-        } else {
-            for ($y = 0; $y < $this->height; ++$y) {
-                imagecopy(
-                    $temp,
-                    $this->image,
-                    0,
-                    $this->height - $y - 1,
-                    0,
-                    $y,
-                    $this->width,
-                    1
-                );
-            }
+
+            imagecopy($temp, $this->image, $left, $top, $destLeft, $destTop, $width, $height);
         }
 
         imagedestroy($this->image);
@@ -230,12 +227,12 @@ class Image
     /**
      * Crop image.
      *
-     * @param int $x      Where to start on the X axis
-     * @param int $y      Where to start on the Y axis
+     * @param int $left      Where to start on the X axis
+     * @param int $top    Where to start on the Y axis
      * @param int $width  The desired width
      * @param int $height The desired height
      */
-    public function crop(int $x = 0, int $y = 0, int $width = 0, int $height = 0): void
+    public function crop(int $left = 0, int $top = 0, int $width = 0, int $height = 0): void
     {
         if (!$width
             || !$height
@@ -248,7 +245,7 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        imagecopy($temp, $this->image, 0, 0, $x, $y, $width, $height);
+        imagecopy($temp, $this->image, 0, 0, $left, $top, $width, $height);
         imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
@@ -333,10 +330,10 @@ class Image
             $cb = $rgb & 0xFF;
 
             // Scan for left edge
-            $x = 0;
-            for ($ix = 0; $ix < $this->width; ++$ix) {
-                for ($iy = 0; $iy < $this->height; ++$iy) {
-                    $rgb = imagecolorat($this->image, $ix, $iy);
+            $left = 0;
+            for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
+                for ($iTop = 0; $iTop < $this->height; ++$iTop) {
+                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
                     $b = $rgb & 0xFF;
@@ -344,17 +341,17 @@ class Image
                         || $g < $cg - $tolerance || $g > $cg + $tolerance
                         || $b < $cb - $tolerance || $b > $cb + $tolerance
                     ) {
-                        $x = $ix;
+                        $left = $iLeft;
                         break 2;
                     }
                 }
             }
 
             // Scan for top edge
-            $y = 0;
-            for ($iy = 0; $iy < $this->height; ++$iy) {
-                for ($ix = 0; $ix < $this->width; ++$ix) {
-                    $rgb = imagecolorat($this->image, $ix, $iy);
+            $top = 0;
+            for ($iTop = 0; $iTop < $this->height; ++$iTop) {
+                for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
+                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
                     $b = $rgb & 0xFF;
@@ -362,7 +359,7 @@ class Image
                         || $g < $cg - $tolerance || $g > $cg + $tolerance
                         || $b < $cb - $tolerance || $b > $cb + $tolerance
                     ) {
-                        $y = $iy;
+                        $top = $iTop;
                         break 2;
                     }
                 }
@@ -370,9 +367,9 @@ class Image
 
             // Scan for right edge
             $width = 0;
-            for ($ix = $this->width - 1; $ix >= 0; --$ix) {
-                for ($iy = $this->height - 1; $iy >= 0; --$iy) {
-                    $rgb = imagecolorat($this->image, $ix, $iy);
+            for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
+                for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
+                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
                     $b = $rgb & 0xFF;
@@ -380,7 +377,7 @@ class Image
                         || $g < $cg - $tolerance || $g > $cg + $tolerance
                         || $b < $cb - $tolerance || $b > $cb + $tolerance
                     ) {
-                        $width = $ix - $x + 1;
+                        $width = $iLeft - $left + 1;
                         break 2;
                     }
                 }
@@ -388,9 +385,9 @@ class Image
 
             // Scan for bottom edge
             $height = 0;
-            for ($iy = $this->height - 1; $iy >= 0; --$iy) {
-                for ($ix = $this->width - 1; $ix >= 0; --$ix) {
-                    $rgb = imagecolorat($this->image, $ix, $iy);
+            for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
+                for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
+                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
                     $b = $rgb & 0xFF;
@@ -398,7 +395,7 @@ class Image
                         || $g < $cg - $tolerance || $g > $cg + $tolerance
                         || $b < $cb - $tolerance || $b > $cb + $tolerance
                     ) {
-                        $height = $iy - $y + 1;
+                        $height = $iTop - $top + 1;
                         break 2;
                     }
                 }
@@ -409,7 +406,7 @@ class Image
             }
         }
 
-        return ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height];
+        return ['x' => $left, 'y' => $top, 'width' => $width, 'height' => $height];
     }
 
     /**
