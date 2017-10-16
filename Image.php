@@ -35,23 +35,23 @@ class Image
         $mimeType = $mimeType[0];
 
         switch ($mimeType) {
-            case 'image/jpeg':
-                $this->image = imagecreatefromjpeg($path);
-                break;
-            case 'image/png':
-                $this->transparent = true;
-                $this->image = imagecreatefrompng($path);
-                break;
-            case 'image/gif':
-                $this->transparent = true;
-                $this->image = imagecreatefromgif($path);
-                break;
-            case 'image/webp':
-                $this->image = imagecreatefromwebp($path);
-                break;
-            case 'image/vnd.wap.wbmp':
-                $this->image = imagecreatefromwbmp($path);
-                break;
+        case 'image/jpeg':
+            $this->image = imagecreatefromjpeg($path);
+            break;
+        case 'image/png':
+            $this->transparent = true;
+            $this->image = imagecreatefrompng($path);
+            break;
+        case 'image/gif':
+            $this->transparent = true;
+            $this->image = imagecreatefromgif($path);
+            break;
+        case 'image/webp':
+            $this->image = imagecreatefromwebp($path);
+            break;
+        case 'image/vnd.wap.wbmp':
+            $this->image = imagecreatefromwbmp($path);
+            break;
         }
 
         if (!$this->image) {
@@ -181,7 +181,7 @@ class Image
      */
     public function resize(int $width, int $height, bool $retainAspect = true): void
     {
-        if ($width === $this->width && $height === $this->height) {
+        if (!$width ||!$height || $width === $this->width && $height === $this->height) {
             return;
         }
 
@@ -200,18 +200,7 @@ class Image
         if ($this->transparent) {
             imagealphablending($temp, false);
         }
-        imagecopyresampled(
-            $temp,
-            $this->image,
-            0,
-            0,
-            0,
-            0,
-            $width,
-            $height,
-            $this->width,
-            $this->height
-        );
+        imagecopyresampled($temp, $this->image, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
         imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
@@ -225,14 +214,14 @@ class Image
     /**
      * Crop image.
      *
-     * @param int $left      Where to start on the X axis
+     * @param int $left   Where to start on the X axis
      * @param int $top    Where to start on the Y axis
      * @param int $width  The desired width
      * @param int $height The desired height
      */
     public function crop(int $left = 0, int $top = 0, int $width = 0, int $height = 0): void
     {
-        if ($width === $this->width && $height === $this->height) {
+        if (!$width || !$height || $width === $this->width && $height === $this->height) {
             return;
         }
 
@@ -286,16 +275,7 @@ class Image
             $canvasY = (int) -round(($this->height - $height) / 2);
         }
 
-        imagecopy(
-            $temp,
-            $this->image,
-            $canvasX,
-            $canvasY,
-            0,
-            0,
-            $this->width,
-            $this->height
-        );
+        imagecopy($temp, $this->image, $canvasX, $canvasY, 0, 0, $this->width, $this->height);
         imagedestroy($this->image);
         if ($this->transparent) {
             imagealphablending($temp, true);
@@ -315,27 +295,17 @@ class Image
      */
     public function findContent(int $tolerance = 5): array
     {
-        $colors = [
-            imagecolorat($this->image, 0, 0),
-            imagecolorat($this->image, $this->width - 1, $this->height - 1),
+        $backgroundColors = [
+            new Color($this->image, 0, 0),
+            new Color($this->image, $this->width - 1, $this->height - 1),
         ];
-        foreach ($colors as $rgb) {
-            $cr = ($rgb >> 16) & 0xFF;
-            $cg = ($rgb >> 8) & 0xFF;
-            $cb = $rgb & 0xFF;
-
+        foreach ($backgroundColors as $backgroundColor) {
             // Scan for left edge
             $left = 0;
             for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
                 for ($iTop = 0; $iTop < $this->height; ++$iTop) {
-                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
-                    $r = ($rgb >> 16) & 0xFF;
-                    $g = ($rgb >> 8) & 0xFF;
-                    $b = $rgb & 0xFF;
-                    if ($r < $cr - $tolerance || $r > $cr + $tolerance
-                        || $g < $cg - $tolerance || $g > $cg + $tolerance
-                        || $b < $cb - $tolerance || $b > $cb + $tolerance
-                    ) {
+                    $color = new Color($this->image, $iLeft, $iTop);
+                    if ($color->isSimilar($backgroundColor, $tolerance)) {
                         $left = $iLeft;
                         break 2;
                     }
@@ -346,14 +316,8 @@ class Image
             $top = 0;
             for ($iTop = 0; $iTop < $this->height; ++$iTop) {
                 for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
-                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
-                    $r = ($rgb >> 16) & 0xFF;
-                    $g = ($rgb >> 8) & 0xFF;
-                    $b = $rgb & 0xFF;
-                    if ($r < $cr - $tolerance || $r > $cr + $tolerance
-                        || $g < $cg - $tolerance || $g > $cg + $tolerance
-                        || $b < $cb - $tolerance || $b > $cb + $tolerance
-                    ) {
+                    $color = new Color($this->image, $iLeft, $iTop);
+                    if ($color->isSimilar($backgroundColor, $tolerance)) {
                         $top = $iTop;
                         break 2;
                     }
@@ -364,14 +328,8 @@ class Image
             $width = 0;
             for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
                 for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
-                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
-                    $r = ($rgb >> 16) & 0xFF;
-                    $g = ($rgb >> 8) & 0xFF;
-                    $b = $rgb & 0xFF;
-                    if ($r < $cr - $tolerance || $r > $cr + $tolerance
-                        || $g < $cg - $tolerance || $g > $cg + $tolerance
-                        || $b < $cb - $tolerance || $b > $cb + $tolerance
-                    ) {
+                    $color = new Color($this->image, $iLeft, $iTop);
+                    if ($color->isSimilar($backgroundColor, $tolerance)) {
                         $width = $iLeft - $left + 1;
                         break 2;
                     }
@@ -382,14 +340,8 @@ class Image
             $height = 0;
             for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
                 for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
-                    $rgb = imagecolorat($this->image, $iLeft, $iTop);
-                    $r = ($rgb >> 16) & 0xFF;
-                    $g = ($rgb >> 8) & 0xFF;
-                    $b = $rgb & 0xFF;
-                    if ($r < $cr - $tolerance || $r > $cr + $tolerance
-                        || $g < $cg - $tolerance || $g > $cg + $tolerance
-                        || $b < $cb - $tolerance || $b > $cb + $tolerance
-                    ) {
+                    $color = new Color($this->image, $iLeft, $iTop);
+                    if ($color->isSimilar($backgroundColor, $tolerance)) {
                         $height = $iTop - $top + 1;
                         break 2;
                     }
