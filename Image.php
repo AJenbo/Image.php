@@ -181,10 +181,7 @@ class Image
      */
     public function resize(int $width, int $height, bool $retainAspect = true): void
     {
-        if (!$width
-            || !$height
-            || ($width == $this->width && $height == $this->height)
-        ) {
+        if ($width === $this->width && $height === $this->height) {
             return;
         }
 
@@ -192,9 +189,10 @@ class Image
             $ratio = $this->width / $this->height;
 
             // Which side most exceeds the bounds
-            $width = round($height * $ratio);
             if ($this->width / $width > $this->height / $height) {
                 $height = round($width / $ratio);
+            } else {
+                $width = round($height * $ratio);
             }
         }
 
@@ -234,10 +232,7 @@ class Image
      */
     public function crop(int $left = 0, int $top = 0, int $width = 0, int $height = 0): void
     {
-        if (!$width
-            || !$height
-            || ($width == $this->width && $height == $this->height)
-        ) {
+        if ($width === $this->width && $height === $this->height) {
             return;
         }
 
