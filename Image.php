@@ -35,23 +35,23 @@ class Image
         $mimeType = $mimeType[0];
 
         switch ($mimeType) {
-        case 'image/jpeg':
-            $this->image = imagecreatefromjpeg($path);
-            break;
-        case 'image/png':
-            $this->transparent = true;
-            $this->image = imagecreatefrompng($path);
-            break;
-        case 'image/gif':
-            $this->transparent = true;
-            $this->image = imagecreatefromgif($path);
-            break;
-        case 'image/webp':
-            $this->image = imagecreatefromwebp($path);
-            break;
-        case 'image/vnd.wap.wbmp':
-            $this->image = imagecreatefromwbmp($path);
-            break;
+            case 'image/jpeg':
+                $this->image = imagecreatefromjpeg($path);
+                break;
+            case 'image/png':
+                $this->transparent = true;
+                $this->image = imagecreatefrompng($path);
+                break;
+            case 'image/gif':
+                $this->transparent = true;
+                $this->image = imagecreatefromgif($path);
+                break;
+            case 'image/webp':
+                $this->image = imagecreatefromwebp($path);
+                break;
+            case 'image/vnd.wap.wbmp':
+                $this->image = imagecreatefromwbmp($path);
+                break;
         }
 
         if (!$this->image) {
@@ -305,7 +305,7 @@ class Image
             for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
                 for ($iTop = 0; $iTop < $this->height; ++$iTop) {
                     $color = new Color($this->image, $iLeft, $iTop);
-                    if ($color->isSimilar($backgroundColor, $tolerance)) {
+                    if (!$color->isSimilar($backgroundColor, $tolerance)) {
                         $left = $iLeft;
                         break 2;
                     }
@@ -317,7 +317,7 @@ class Image
             for ($iTop = 0; $iTop < $this->height; ++$iTop) {
                 for ($iLeft = 0; $iLeft < $this->width; ++$iLeft) {
                     $color = new Color($this->image, $iLeft, $iTop);
-                    if ($color->isSimilar($backgroundColor, $tolerance)) {
+                    if (!$color->isSimilar($backgroundColor, $tolerance)) {
                         $top = $iTop;
                         break 2;
                     }
@@ -329,7 +329,7 @@ class Image
             for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
                 for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
                     $color = new Color($this->image, $iLeft, $iTop);
-                    if ($color->isSimilar($backgroundColor, $tolerance)) {
+                    if (!$color->isSimilar($backgroundColor, $tolerance)) {
                         $width = $iLeft - $left + 1;
                         break 2;
                     }
@@ -341,7 +341,7 @@ class Image
             for ($iTop = $this->height - 1; $iTop >= 0; --$iTop) {
                 for ($iLeft = $this->width - 1; $iLeft >= 0; --$iLeft) {
                     $color = new Color($this->image, $iLeft, $iTop);
-                    if ($color->isSimilar($backgroundColor, $tolerance)) {
+                    if (!$color->isSimilar($backgroundColor, $tolerance)) {
                         $height = $iTop - $top + 1;
                         break 2;
                     }

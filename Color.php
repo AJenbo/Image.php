@@ -31,9 +31,9 @@ class Color
      */
     public function isSimilar(self $color, int $tolerance = 0): bool
     {
-        if ($color->red < $this->red - $tolerance || $color->red > $this->red + $tolerance
-            || $color->green < $this->green - $tolerance || $color->green > $this->green + $tolerance
-            || $color->blue < $this->blue - $tolerance || $color->red > $this->blue + $tolerance
+        if (abs($color->red - $this->red) < $tolerance
+            && abs($color->green - $this->green) < $tolerance
+            && abs($color->blue - $this->blue) < $tolerance
         ) {
             return true;
         }
