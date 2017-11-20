@@ -1,6 +1,7 @@
 {
     "name": "ajenbo/image.php",
     "description": "Helper function for simple image manipulation using GD functions.",
+    "license": "LGPL-3.0",
     "require": {
         "php": ">=7.1",
         "ext-gd": "*"
